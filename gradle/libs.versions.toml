@@ -1,0 +1,89 @@
+[versions]
+agp = "8.10.0"
+kotlin = "2.0.21"
+coreKtx = "1.16.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.1"
+material = "1.12.0"
+constraintlayout = "2.2.1"
+lifecycleLivedataKtx = "2.9.1"
+lifecycleViewmodelKtx = "2.9.1"
+navigationFragmentKtx = "2.9.0"
+navigationUiKtx = "2.9.0"
+
+# Room Database
+room = "2.6.1"
+
+# Retrofit
+retrofit = "2.11.0"
+retrofit-converter-gson = "2.11.0"
+okhttp-logging = "4.12.0"
+
+# Coroutines
+kotlinx-coroutines = "1.8.1"
+lifecycle-runtime-ktx = "2.8.3" # This is for lifecycle-runtime-ktx which was missing from your original coroutines section
+
+# Dagger Hilt
+hilt = "2.51.1"
+
+# Thêm các phiên bản mới vào đây
+glide = "4.15.1" # Phiên bản cho Glide
+google-maps = "18.1.0" # Phiên bản cho play-services-maps
+google-location = "21.0.1" # Phiên bản cho play-services-location
+circle-imageview = "3.1.0" # Phiên bản cho CircleImageView
+mockwebserver = "4.10.0" # Phiên bản cho MockWebServer
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
+
+# Room Database
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+
+# Retrofit for API calls
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit-converter-gson" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp-logging" }
+
+# Coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+
+# Dagger Hilt for Dependency Injection
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+
+# Glide for image loading
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+
+# Google Maps
+google-maps-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "google-maps" }
+google-maps-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-location" }
+
+# Circle ImageView
+circle-imageview = { group = "de.hdodenhof", name = "circleimageview", version.ref = "circle-imageview" }
+
+# Mock API - MockWebServer for testing
+okhttp3-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "mockwebserver" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" } # KAPT plugin will match Kotlin version
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" } # Đảm bảo nó CHỈ Ở ĐÂY

@@ -12,11 +12,14 @@ interface CartDao {
     @Query("SELECT * FROM cart_items")
     fun getAllCartItems(): LiveData<List<CartItem>>
     
+    @Query("SELECT * FROM cart_items")
+    suspend fun getAllCartItemsSync(): List<CartItem>
+    
     @Query("SELECT * FROM cart_items WHERE productId = :productId")
     suspend fun getCartItemByProductId(productId: Int): CartItem?
     
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCartItem(cartItem: CartItem)
+    suspend fun insertCartItem(cartItem: CartItem): Long
     
     @Update
     suspend fun updateCartItem(cartItem: CartItem)

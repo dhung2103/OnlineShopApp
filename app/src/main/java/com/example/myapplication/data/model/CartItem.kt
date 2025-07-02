@@ -7,15 +7,7 @@ import androidx.room.ForeignKey
 /**
  * Represents a cart item in shopping cart
  */
-@Entity(tableName = "cart_items",
-    foreignKeys = [
-        ForeignKey(
-            entity = Product::class,
-            parentColumns = ["id"],
-            childColumns = ["productId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ],
+@Entity(tableName = "cart_items", 
     indices = [androidx.room.Index("productId")])
 data class CartItem(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

@@ -12,8 +12,10 @@ import com.example.onlineshopapp.databinding.ItemProductBinding
 import java.text.NumberFormat
 import java.util.*
 
-class ProductAdapter(private val onItemClick: (Product) -> Unit) :
-    ListAdapter<Product, ProductAdapter.ProductViewHolder>(ProductDiffCallback()) {
+class ProductAdapter(
+    private val onItemClick: (Product) -> Unit,
+    private val onAddToCartClick: (Product) -> Unit
+) : ListAdapter<Product, ProductAdapter.ProductViewHolder>(ProductDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val binding = ItemProductBinding.inflate(
@@ -36,6 +38,27 @@ class ProductAdapter(private val onItemClick: (Product) -> Unit) :
                     onItemClick(getItem(position))
                 }
             }
+            
+            binding.btnAddToCart.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    // Add a simple scale animation
+                    it.animate()
+                        .scaleX(0.9f)
+                        .scaleY(0.9f)
+                        .setDuration(100)
+                        .withEndAction {
+                            it.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(100)
+                                .start()
+                        }
+                        .start()
+                    
+                    onAddToCartClick(getItem(position))
+                }
+            }
         }
 
         fun bind(product: Product) {
@@ -46,7 +69,12 @@ class ProductAdapter(private val onItemClick: (Product) -> Unit) :
                 val format = NumberFormat.getCurrencyInstance()
                 format.currency = Currency.getInstance("USD")
                 tvProductPrice.text = format.format(product.price)
-                  // Load image with Glide
+                
+                // Set rating
+                ratingBar.rating = product.rating
+                tvRatingCount.text = "(${product.reviewCount})"
+                
+                // Load image with Glide
                 Glide.with(binding.root)
                     .load(product.imageUrl)
                     .placeholder(R.drawable.ic_image_placeholder)

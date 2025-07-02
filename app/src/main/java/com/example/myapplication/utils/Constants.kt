@@ -5,7 +5,7 @@ package com.example.onlineshopapp.utils
  */
 object Constants {
     // API Base URL
-    const val BASE_URL = "https://example.com/api/"
+    const val BASE_URL = "https://68653f0b5b5d8d0339806c3f.mockapi.io/api/"
     
     // Shared Preferences
     const val PREFS_NAME = "online_shop_prefs"

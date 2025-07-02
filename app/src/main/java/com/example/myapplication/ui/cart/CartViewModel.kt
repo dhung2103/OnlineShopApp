@@ -35,7 +35,16 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
      */
     fun addToCart(product: Product, quantity: Int = 1) {
         viewModelScope.launch {
-            cartRepository.addToCart(product, quantity)
+            try {
+                val result = cartRepository.addToCart(product, quantity)
+                if (result is Resource.Error) {
+                    android.util.Log.e("CartViewModel", "Error adding to cart: ${result.message}")
+                } else {
+                    android.util.Log.d("CartViewModel", "Successfully added product ${product.id} to cart")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Exception adding to cart", e)
+            }
         }
     }
     
@@ -44,7 +53,16 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
      */
     fun updateCartItemQuantity(productId: Int, quantity: Int) {
         viewModelScope.launch {
-            cartRepository.updateCartItemQuantity(productId, quantity)
+            try {
+                val result = cartRepository.updateCartItemQuantity(productId, quantity)
+                if (result is Resource.Error) {
+                    android.util.Log.e("CartViewModel", "Error updating cart: ${result.message}")
+                } else {
+                    android.util.Log.d("CartViewModel", "Successfully updated quantity for product $productId")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Exception updating cart quantity", e)
+            }
         }
     }
     
@@ -53,7 +71,16 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
      */
     fun removeFromCart(productId: Int) {
         viewModelScope.launch {
-            cartRepository.removeFromCart(productId)
+            try {
+                val result = cartRepository.removeFromCart(productId)
+                if (result is Resource.Error) {
+                    android.util.Log.e("CartViewModel", "Error removing from cart: ${result.message}")
+                } else {
+                    android.util.Log.d("CartViewModel", "Successfully removed product $productId from cart")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Exception removing from cart", e)
+            }
         }
     }
       /**
@@ -61,7 +88,12 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
      */
     fun clearCart() {
         viewModelScope.launch {
-            cartRepository.clearCart()
+            try {
+                cartRepository.clearCart()
+                android.util.Log.d("CartViewModel", "Cart cleared successfully")
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Error clearing cart", e)
+            }
         }
     }
     
@@ -72,8 +104,18 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
         _checkoutStatus.value = Resource.Loading()
         
         viewModelScope.launch {
-            val result = cartRepository.checkout(shippingAddress)
-            _checkoutStatus.postValue(result)
+            try {
+                val result = cartRepository.checkout(shippingAddress)
+                _checkoutStatus.postValue(result)
+                if (result is Resource.Error) {
+                    android.util.Log.e("CartViewModel", "Checkout error: ${result.message}")
+                } else {
+                    android.util.Log.d("CartViewModel", "Checkout successful")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Exception during checkout", e)
+                _checkoutStatus.postValue(Resource.Error("Error during checkout: ${e.message}"))
+            }
         }
     }
     
@@ -91,10 +133,19 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
      */
     fun increaseQuantity(productId: Int) {
         viewModelScope.launch {
-            val cartItem = cartRepository.getCartItemByProductId(productId)
-            cartItem?.let {
-                val newQuantity = it.quantity + 1
-                cartRepository.updateCartItemQuantity(productId, newQuantity)
+            try {
+                val cartItem = cartRepository.getCartItemByProductId(productId)
+                cartItem?.let {
+                    val newQuantity = it.quantity + 1
+                    val result = cartRepository.updateCartItemQuantity(productId, newQuantity)
+                    if (result is Resource.Error) {
+                        android.util.Log.e("CartViewModel", "Error increasing quantity: ${result.message}")
+                    }
+                } ?: run {
+                    android.util.Log.e("CartViewModel", "Could not find product $productId in cart")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Exception increasing quantity", e)
             }
         }
     }
@@ -104,12 +155,23 @@ class CartViewModel @Inject constructor(private val cartRepository: CartReposito
      */
     fun decreaseQuantity(productId: Int) {
         viewModelScope.launch {
-            val cartItem = cartRepository.getCartItemByProductId(productId)
-            cartItem?.let {
-                if (it.quantity > 1) {
-                    val newQuantity = it.quantity - 1
-                    cartRepository.updateCartItemQuantity(productId, newQuantity)
+            try {
+                val cartItem = cartRepository.getCartItemByProductId(productId)
+                cartItem?.let {
+                    if (it.quantity > 1) {
+                        val newQuantity = it.quantity - 1
+                        val result = cartRepository.updateCartItemQuantity(productId, newQuantity)
+                        if (result is Resource.Error) {
+                            android.util.Log.e("CartViewModel", "Error decreasing quantity: ${result.message}")
+                        }
+                    } else {
+                        android.util.Log.d("CartViewModel", "Quantity already at minimum (1)")
+                    }
+                } ?: run {
+                    android.util.Log.e("CartViewModel", "Could not find product $productId in cart")
                 }
+            } catch (e: Exception) {
+                android.util.Log.e("CartViewModel", "Exception decreasing quantity", e)
             }
         }
     }

@@ -32,7 +32,10 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "online_shop_database"
-        ).fallbackToDestructiveMigration().build()
+        )
+        .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides
@@ -114,6 +117,7 @@ object AppModule {
     ): com.example.onlineshopapp.data.repository.CartRepository {
         return com.example.onlineshopapp.data.repository.CartRepository(
             appDatabase.cartDao(),
+            appDatabase.productDao(),
             apiService,
             context
         )

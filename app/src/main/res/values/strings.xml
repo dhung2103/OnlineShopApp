@@ -61,8 +61,8 @@
     <!-- Cart -->
     <string name="checkout">Checkout</string>
     <string name="remove">Remove</string>
-    <string name="qty">Qty: %1$d</string>
-    <string name="subtotal">Subtotal: $%1$s</string>
+    <string name="qty">Qty: </string>
+    <string name="subtotal">Subtotal: </string>
     <string name="empty_cart">Your cart is empty</string>
     <string name="order_confirmation">Order Confirmation</string>
     <string name="shopping_cart">Shopping Cart</string>
@@ -73,10 +73,10 @@
     <string name="shop_now">Shop Now</string>
     <string name="order_success">Order placed successfully!</string>
     <string name="order_success_message">Thank you for your purchase. Your order has been confirmed and will be processed soon.</string>
-    <string name="your_order_id">Your Order ID: %1$s</string>
+    <string name="your_order_id">Your Order ID: </string>
     <string name="continue_shopping">Continue Shopping</string>
     <string name="proceed_to_checkout">Proceed to Checkout</string>
-    <string name="total_amount">Total Amount: $%1$s</string>
+    <string name="total_amount">Total Amount: </string>
     <string name="order_details">Order Details</string>
     <string name="order_number">Order Number:</string>
     <string name="date">Date:</string>

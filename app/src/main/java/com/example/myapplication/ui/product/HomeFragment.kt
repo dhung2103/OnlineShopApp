@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.onlineshopapp.R
 import com.example.onlineshopapp.databinding.FragmentHomeBinding
+import com.example.onlineshopapp.ui.cart.CartViewModel
 import com.example.onlineshopapp.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,6 +21,7 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ProductViewModel by viewModels()
+    private val cartViewModel: CartViewModel by viewModels()
     private lateinit var productAdapter: ProductAdapter
 
     override fun onCreateView(
@@ -41,13 +43,31 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        productAdapter = ProductAdapter { product ->
-            // Navigate to product detail using direct navigation with bundle
-            val bundle = Bundle().apply {
-                putInt("productId", product.id)
+        productAdapter = ProductAdapter(
+            onItemClick = { product ->
+                // Navigate to product detail using direct navigation with bundle
+                val bundle = Bundle().apply {
+                    putInt("productId", product.id)
+                }
+                findNavController().navigate(R.id.action_homeFragment_to_productDetailFragment, bundle)
+            },
+            onAddToCartClick = { product ->
+                // Log for debugging
+                android.util.Log.d("HomeFragment", "Adding product ${product.id} to cart")
+                try {
+                    // Add product to cart
+                    cartViewModel.addToCart(product)
+                    Toast.makeText(requireContext(), getString(R.string.added_to_cart), Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    android.util.Log.e("HomeFragment", "Error adding to cart", e)
+                    Toast.makeText(
+                        requireContext(),
+                        "Error adding to cart: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-            findNavController().navigate(R.id.action_homeFragment_to_productDetailFragment, bundle)
-        }
+        )
         
         binding.rvProducts.apply {
             adapter = productAdapter

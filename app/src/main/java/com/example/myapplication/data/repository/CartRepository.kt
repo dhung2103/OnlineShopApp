@@ -16,6 +16,7 @@ import java.io.IOException
  */
 class CartRepository(
     private val cartDao: CartDao,
+    private val productDao: com.example.onlineshopapp.data.local.ProductDao,
     private val apiService: ApiService,
     private val context: Context
 ) {
@@ -46,23 +47,51 @@ class CartRepository(
     suspend fun addToCart(product: Product, quantity: Int = 1): Resource<CartItem> {
         return withContext(Dispatchers.IO) {
             try {
+                android.util.Log.d("CartRepository", "Adding product ${product.id} to cart, quantity: $quantity")
+                
+                // First, ensure the product is saved in local database
+                try {
+                    // This will insert or update the product in the local database
+                    android.util.Log.d("CartRepository", "Ensuring product exists in database")
+                    productDao.insertProduct(product)
+                } catch (e: Exception) {
+                    android.util.Log.e("CartRepository", "Failed to save product to database", e)
+                    // Not critical, we'll continue anyway since we've removed the foreign key constraint
+                }
+                
                 // Check if product already exists in cart
-                val existingItem = cartDao.getCartItemByProductId(product.id)
+                var existingItem = try {
+                    cartDao.getCartItemByProductId(product.id)
+                } catch (e: Exception) {
+                    android.util.Log.e("CartRepository", "Error getting cart item", e)
+                    null
+                }
                 
                 if (existingItem != null) {
+                    android.util.Log.d("CartRepository", "Product already in cart, updating quantity from ${existingItem.quantity} to ${existingItem.quantity + quantity}")
+                    
                     // Update quantity if already in cart
-                    existingItem.quantity += quantity
-                    cartDao.updateCartItem(existingItem)
+                    try {
+                        existingItem.quantity += quantity
+                        cartDao.updateCartItem(existingItem)
+                        android.util.Log.d("CartRepository", "Successfully updated quantity")
+                    } catch (e: Exception) {
+                        android.util.Log.e("CartRepository", "Error updating quantity", e)
+                        return@withContext Resource.Error("Database error: ${e.message}")
+                    }
                     
                     // Try to update on server
                     try {
                         apiService.addToCart(existingItem)
                     } catch (e: Exception) {
+                        android.util.Log.w("CartRepository", "Server sync failed for cart update, continuing with local data", e)
                         // Ignore server errors, cart is already updated locally
                     }
                     
                     return@withContext Resource.Success(existingItem)
                 } else {
+                    android.util.Log.d("CartRepository", "Adding new product to cart: ${product.name}")
+                    
                     // Create new cart item
                     val cartItem = CartItem(
                         productId = product.id,
@@ -73,19 +102,38 @@ class CartRepository(
                     )
                     
                     // Save to local database
-                    cartDao.insertCartItem(cartItem)
+                    try {
+                        val id = cartDao.insertCartItem(cartItem)
+                        android.util.Log.d("CartRepository", "Successfully inserted item into local DB with id: $id")
+                        
+                        // Reload the item to get the auto-generated id
+                        existingItem = cartDao.getCartItemByProductId(product.id)
+                        if (existingItem == null) {
+                            android.util.Log.e("CartRepository", "Failed to retrieve inserted cart item")
+                            return@withContext Resource.Error("Failed to retrieve inserted cart item")
+                        }
+                        
+                    } catch (e: Exception) {
+                        android.util.Log.e("CartRepository", "Error inserting into local DB", e)
+                        return@withContext Resource.Error("Database error: ${e.message}")
+                    }
                     
                     // Try to update on server
                     try {
-                        apiService.addToCart(cartItem)
+                        existingItem?.let {
+                            apiService.addToCart(it)
+                        }
                     } catch (e: Exception) {
+                        android.util.Log.w("CartRepository", "Server sync failed for new cart item, continuing with local data", e)
                         // Ignore server errors, cart is already updated locally
                     }
                     
-                    return@withContext Resource.Success(cartItem)
+                    return@withContext existingItem?.let { Resource.Success(it) } 
+                        ?: Resource.Error("Failed to create cart item")
                 }
             } catch (e: Exception) {
-                Resource.Error("Error adding to cart: ${e.message}")
+                android.util.Log.e("CartRepository", "Unexpected error adding to cart", e)
+                return@withContext Resource.Error("Error adding to cart: ${e.message}")
             }
         }
     }
@@ -158,15 +206,19 @@ class CartRepository(
     suspend fun checkout(shippingAddress: String): Resource<CheckoutResponse> {
         return withContext(Dispatchers.IO) {
             try {
-                // Get all cart items
-                val cartItems = cartDao.getAllCartItems().value ?: emptyList()
+                // Get all cart items directly from database (not from LiveData)
+                val cartItems = cartDao.getAllCartItemsSync()
+                
+                android.util.Log.d("CartRepository", "Checkout - found ${cartItems.size} items in cart")
                 
                 if (cartItems.isEmpty()) {
+                    android.util.Log.w("CartRepository", "Checkout failed - cart is empty")
                     return@withContext Resource.Error("Cart is empty")
                 }
                 
                 // Calculate total
                 val totalAmount = cartItems.sumOf { it.quantity * it.productPrice }
+                android.util.Log.d("CartRepository", "Checkout - total amount: $totalAmount")
                 
                 // Create checkout request
                 val checkoutRequest = CheckoutRequest(
@@ -212,7 +264,9 @@ class CartRepository(
                     is HttpException -> Resource.Error("Network error during checkout: ${e.message}")
                     is IOException -> {
                         // Offline checkout
-                        val cartItems = cartDao.getAllCartItems().value ?: emptyList()
+                        val cartItems = cartDao.getAllCartItemsSync()
+                        
+                        android.util.Log.d("CartRepository", "Offline checkout - found ${cartItems.size} items in cart")
                         
                         if (cartItems.isEmpty()) {
                             return@withContext Resource.Error("Cart is empty")

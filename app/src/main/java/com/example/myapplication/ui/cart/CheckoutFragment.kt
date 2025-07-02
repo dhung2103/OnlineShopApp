@@ -47,7 +47,21 @@ class CheckoutFragment : Fragment() {
             if (validateForm()) {
                 // Create the shipping address string from form fields
                 val shippingAddress = buildShippingAddressString()
-                viewModel.checkout(shippingAddress)
+                
+                // Get selected payment method
+                val paymentMethod = getSelectedPaymentMethod()
+                
+                // Get current cart items and validate
+                viewModel.cartItems.value?.let { cartItems ->
+                    if (cartItems.isNotEmpty()) {
+                        // Proceed with checkout
+                        viewModel.checkout("$shippingAddress\nPayment Method: $paymentMethod")
+                    } else {
+                        Toast.makeText(requireContext(), "Your cart is empty", Toast.LENGTH_SHORT).show()
+                    }
+                } ?: run {
+                    Toast.makeText(requireContext(), "Unable to process order. Please try again.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -116,32 +130,20 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.cartItems.observe(viewLifecycleOwner) { result ->
-            when (result) {
-                is Resource.Loading<*> -> {
-                    binding.progressBar.visibility = View.VISIBLE
-                }
-                is Resource.Success<*> -> {
-                    binding.progressBar.visibility = View.GONE
-                    
-                    val cartItems = result.data as? List<CartItem>
-                    if (cartItems != null && cartItems.isEmpty()) {
-                        Toast.makeText(requireContext(), "Your cart is empty", Toast.LENGTH_SHORT).show()
-                        findNavController().navigateUp()
-                    } else if (cartItems != null) {
-                        // Calculate and display subtotal, shipping, and total
-                        val subtotal = cartItems.sumOf { it.productPrice * it.quantity }
-                        val shipping = 5.99 // Fixed shipping cost
-                        val total = subtotal + shipping
-                        
-                        updatePriceSummary(subtotal, shipping, total)
-                    }
-                }
-                is Resource.Error<*> -> {
-                    binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), result.message ?: "Error loading cart", Toast.LENGTH_LONG).show()
-                }
-                else -> { /* No action needed */ }
+        viewModel.cartItems.observe(viewLifecycleOwner) { cartItems ->
+            binding.progressBar.visibility = View.GONE
+            
+            if (cartItems.isEmpty()) {
+                Toast.makeText(requireContext(), "Your cart is empty", Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            } else {
+                // Calculate and display subtotal, shipping, and total
+                val subtotal = cartItems.sumOf { it.productPrice * it.quantity }
+                // Calculate shipping (free shipping for orders over $100, otherwise $4.99)
+                val shipping = if (subtotal > 100.0) 0.0 else 4.99
+                val total = subtotal + shipping
+                
+                updatePriceSummary(subtotal, shipping, total)
             }
         }
         

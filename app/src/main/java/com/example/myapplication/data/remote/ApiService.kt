@@ -38,8 +38,8 @@ interface ApiService {
     @POST("checkout")
     suspend fun checkout(@Body checkoutRequest: CheckoutRequest): Response<CheckoutResponse>
     
-    @GET("store/location")
-    suspend fun getStoreLocation(): Response<StoreLocation>
+    @GET("storeLocations")
+    suspend fun getStoreLocations(): Response<List<StoreLocation>>
     
     @GET("chat/messages")
     suspend fun getChatMessages(): Response<List<ChatMessage>>

@@ -17,24 +17,24 @@ import javax.inject.Inject
 @HiltViewModel
 class MapViewModel @Inject constructor(private val storeRepository: StoreRepository) : ViewModel() {
 
-    // LiveData for store location
-    private val _storeLocation = MutableLiveData<Resource<StoreLocation>>()
-    val storeLocation: LiveData<Resource<StoreLocation>> = _storeLocation
+    // LiveData for store locations
+    private val _storeLocations = MutableLiveData<Resource<List<StoreLocation>>>()
+    val storeLocations: LiveData<Resource<List<StoreLocation>>> = _storeLocations
     
     init {
-        // Load store location when ViewModel is created
-        loadStoreLocation()
+        // Load store locations when ViewModel is created
+        loadStoreLocations()
     }
     
     /**
-     * Load store location data
+     * Load store locations data
      */
-    fun loadStoreLocation() {
-        _storeLocation.value = Resource.Loading()
+    fun loadStoreLocations() {
+        _storeLocations.value = Resource.Loading()
         
         viewModelScope.launch {
-            val result = storeRepository.getStoreLocation()
-            _storeLocation.postValue(result)
+            val result = storeRepository.getStoreLocations()
+            _storeLocations.postValue(result)
         }
     }
 }

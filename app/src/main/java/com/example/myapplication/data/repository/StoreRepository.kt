@@ -20,13 +20,13 @@ class StoreRepository(
     private val mockApiHelper = MockApiHelper(context)
     
     /**
-     * Get store location information
+     * Get store locations information
      */
-    suspend fun getStoreLocation(): Resource<StoreLocation> {
+    suspend fun getStoreLocations(): Resource<List<StoreLocation>> {
         return withContext(Dispatchers.IO) {
             try {
                 // Try to fetch from API
-                val response = apiService.getStoreLocation()
+                val response = apiService.getStoreLocations()
                 
                 if (response.isSuccessful) {
                     response.body()?.let {
@@ -36,7 +36,7 @@ class StoreRepository(
                 
                 // Try to get from mock data
                 val mockLocation = mockApiHelper.getStoreLocation()
-                return@withContext Resource.Success(mockLocation)
+                return@withContext Resource.Success(listOf(mockLocation))
                 
             } catch (e: Exception) {
                 when (e) {
@@ -45,12 +45,12 @@ class StoreRepository(
                         // Try to get from mock data
                         try {
                             val mockLocation = mockApiHelper.getStoreLocation()
-                            Resource.Success(mockLocation)
+                            Resource.Success(listOf(mockLocation))
                         } catch (mockEx: Exception) {
-                            Resource.Error("Unable to load store location: ${mockEx.message}")
+                            Resource.Error("Unable to load store locations: ${mockEx.message}")
                         }
                     }
-                    else -> Resource.Error("Error fetching store location: ${e.message}")
+                    else -> Resource.Error("Error fetching store locations: ${e.message}")
                 }
             }
         }

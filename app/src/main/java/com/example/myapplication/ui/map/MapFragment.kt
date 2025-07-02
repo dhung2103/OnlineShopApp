@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.onlineshopapp.R
+import com.example.onlineshopapp.data.model.StoreLocation
 import com.example.onlineshopapp.databinding.FragmentMapBinding
 import com.example.onlineshopapp.utils.Resource
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -60,7 +61,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         requestLocationPermission()
-        viewModel.loadStoreLocation()
+        viewModel.loadStoreLocations()
     }
     
     private fun requestLocationPermission() {
@@ -97,8 +98,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         }
     }
     
+    private fun updateStoreInfoCard(storeLocation: StoreLocation) {
+        binding.tvStoreName.text = storeLocation.name
+        binding.tvStoreAddress.text = storeLocation.address
+        binding.tvStoreHours.text = storeLocation.openingHours
+        
+        // Set up button click listeners
+        binding.btnCallStore.setOnClickListener {
+            // TODO: Implement phone call functionality
+            Toast.makeText(requireContext(), "Calling ${storeLocation.phoneNumber}", Toast.LENGTH_SHORT).show()
+        }
+        
+        binding.btnDirections.setOnClickListener {
+            // TODO: Implement directions functionality
+            Toast.makeText(requireContext(), "Getting directions to ${storeLocation.name}", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
     private fun observeViewModel() {
-        viewModel.storeLocation.observe(viewLifecycleOwner) { result ->
+        viewModel.storeLocations.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is Resource.Loading<*> -> {
                     binding.progressBar.visibility = View.VISIBLE
@@ -106,19 +124,27 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 is Resource.Success<*> -> {
                     binding.progressBar.visibility = View.GONE
                     
-                    val location = result.data
-                    if (location != null) {
-                        val storePosition = LatLng(location.latitude, location.longitude)
-                        googleMap?.addMarker(
-                            MarkerOptions()
-                                .position(storePosition)
-                                .title(location.name)
-                                .snippet(location.address)
-                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                        )
+                    val locations = result.data
+                    if (locations != null && locations.isNotEmpty()) {
+                        // Add markers for all store locations
+                        locations.forEach { location ->
+                            val storePosition = LatLng(location.latitude, location.longitude)
+                            googleMap?.addMarker(
+                                MarkerOptions()
+                                    .position(storePosition)
+                                    .title(location.name)
+                                    .snippet(location.address)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                            )
+                        }
                         
-                        // Move camera to the store location
-                        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(storePosition, 12f))
+                        // Move camera to the first store location
+                        val firstLocation = locations[0]
+                        val firstStorePosition = LatLng(firstLocation.latitude, firstLocation.longitude)
+                        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(firstStorePosition, 12f))
+                        
+                        // Update store info card with first location
+                        updateStoreInfoCard(firstLocation)
                     }
                 }
                 is Resource.Error<*> -> {
